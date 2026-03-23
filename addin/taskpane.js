@@ -7,7 +7,6 @@ Office.onReady((info) => {
     loadEmailInfo();
     document.getElementById('btnApply').addEventListener('click', appliquerRevision);
     document.getElementById('btnFullscreen').addEventListener('click', ouvrirPleinEcran);
-    document.getElementById('btnDebug').addEventListener('click', afficherDebugSignature);
     document.getElementById('emailRevised').addEventListener('input', (e) => autoResizeTextarea(e.target));
 
     // Toggle Changements clés
@@ -19,14 +18,6 @@ Office.onReady((info) => {
       arrow.classList.toggle('open', !isOpen);
     });
 
-    // Toggle Diagnostic
-    document.getElementById('toggleDiagnostic').addEventListener('click', () => {
-      const body = document.getElementById('diagnostic');
-      const arrow = document.querySelector('#toggleDiagnostic .toggle-arrow');
-      const isOpen = body.style.display !== 'none';
-      body.style.display = isOpen ? 'none' : 'block';
-      arrow.classList.toggle('open', !isOpen);
-    });
     reviserCourriel();
   }
 });
@@ -230,9 +221,6 @@ function inlineFormat(text) {
 function afficherRevision(markdown) {
   const sections = parseRevision(markdown);
 
-  if (sections.diagnostic) {
-    document.getElementById('diagnostic').innerHTML = formatMarkdown(sections.diagnostic);
-  }
   if (sections.revision) {
     const textarea = document.getElementById('emailRevised');
     textarea.value = sections.revision;
@@ -248,13 +236,11 @@ function afficherRevision(markdown) {
 
 /* ─── Parser les sections Markdown de Claude ────────────────────────────────── */
 function parseRevision(text) {
-  const sections = { diagnostic: '', revision: '', changements: '' };
+  const sections = { revision: '', changements: '' };
 
-  const diagMatch = text.match(/###\s*Diagnostic\s*([\s\S]*?)(?=###\s*Courriel révisé|$)/i);
-  const revMatch  = text.match(/###\s*Courriel révisé\s*([\s\S]*?)(?=###\s*Changements clés|$)/i);
-  const chgMatch  = text.match(/###\s*Changements clés\s*([\s\S]*?)$/i);
+  const revMatch = text.match(/###\s*Courriel révisé\s*([\s\S]*?)(?=###\s*Changements clés|$)/i);
+  const chgMatch = text.match(/###\s*Changements clés\s*([\s\S]*?)$/i);
 
-  if (diagMatch) sections.diagnostic  = diagMatch[1].trim();
   if (revMatch)  sections.revision    = revMatch[1].trim().replace(/(\n\s*---+\s*)+$/, '').trim();
   if (chgMatch)  sections.changements = chgMatch[1].trim();
 
@@ -343,23 +329,6 @@ async function envoyerFeedback(original, revised) {
   }
 }
 
-/* ─── Debug temporaire — afficher le HTML brut pour diagnostiquer la signature ── */
-async function afficherDebugSignature() {
-  const item = Office.context.mailbox.item;
-  if (!item) return;
-  const html = await getEmailBodyHtml(item);
-  const { bodyHtml, signatureHtml } = splitSignatureHtml(html);
-  const detected = signatureHtml ? '✅ SIGNATURE DÉTECTÉE' : '❌ SIGNATURE NON DÉTECTÉE';
-  const sigPreview = signatureHtml ? signatureHtml.substring(0, 6000) : '(aucune)';
-  const info = [
-    detected,
-    `Longueur corps : ${bodyHtml.length} chars`,
-    `Longueur signature : ${signatureHtml.length} chars`,
-    `\nDÉBUT DE LA SIGNATURE DÉTECTÉE :\n${sigPreview}`,
-  ].join('\n');
-  document.getElementById('debugOutput').value = info;
-  document.getElementById('debugBox').style.display = 'block';
-}
 
 /* ─── Bouton plein écran ─────────────────────────────────────────────────────── */
 function ouvrirPleinEcran() {

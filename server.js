@@ -97,11 +97,6 @@ Le courriel doit avoir l'air écrit par un humain, pas généré par une IA. App
 
 Réponds TOUJOURS avec exactement cette structure Markdown :
 
-### Diagnostic
-[bullets sur les axes problématiques seulement — clarté, ton, structure, appel à l'action, longueur]
-[Si le brouillon est déjà solide : une seule ligne courte le confirmant, pas de bullets forcés]
-[⚠️ Signale les risques de malentendu si pertinent]
-
 ### Courriel révisé
 [courriel complet, prêt à copier-coller, SANS signature]
 
