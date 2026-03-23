@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Réviser avec A&V</title>
+  <link rel="stylesheet" href="taskpane.css">
+  <!-- Office.js — requis pour interagir avec Outlook -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>
+</head>
+<body>
+  <div class="container">
+
+    <!-- En-tête -->
+    <header class="header">
+      <div class="logo">A<span class="amp">&</span>V</div>
+      <div class="subtitle">Révision de courriel</div>
+    </header>
+
+    <!-- État de chargement -->
+    <div class="loading" id="loading" style="display:none">
+      <div class="spinner"></div>
+      <span>Claude analyse le courriel…</span>
+    </div>
+
+    <!-- Zone de résultats -->
+    <div class="result-container" id="resultContainer" style="display:none">
+
+      <!-- Courriel révisé — en évidence -->
+      <div class="section section-primary" id="sectionRevision">
+        <div class="section-title section-title-primary">✦ Courriel révisé</div>
+        <textarea class="email-revised-edit" id="emailRevised" placeholder="Le courriel révisé apparaîtra ici…" spellcheck="true" lang="fr"></textarea>
+        <div class="apply-bar">
+          <button class="btn-apply" id="btnApply">✓ Appliquer</button>
+        </div>
+      </div>
+
+      <!-- Changements clés -->
+      <div class="section" id="sectionChangements">
+        <div class="section-title">Changements clés</div>
+        <div class="section-body changes-body" id="changements"></div>
+      </div>
+
+      <!-- Diagnostic — réduit par défaut, en bas -->
+      <div class="section" id="sectionDiagnostic">
+        <div class="section-title section-toggle" id="toggleDiagnostic">
+          <span>Diagnostic</span>
+          <span class="toggle-arrow">▸</span>
+        </div>
+        <div class="section-body" id="diagnostic" style="display:none"></div>
+      </div>
+
+    </div>
+
+    <!-- Message d'erreur -->
+    <div class="error-box" id="errorBox" style="display:none">
+      <span id="errorMessage"></span>
+    </div>
+
+  </div>
+
+  <script src="taskpane.js"></script>
+</body>
+</html>

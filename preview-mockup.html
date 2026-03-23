@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aperçu — Add-in A&V Hypothèques</title>
+<style>
+  body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 16px;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* Simuler la fenêtre Outlook autour du panneau */
+  .outlook-frame {
+    display: flex;
+    width: 900px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  /* Zone courriel (gauche) */
+  .email-pane {
+    flex: 1;
+    background: #1F1F1F;
+    padding: 24px;
+    border-right: 1px solid #333;
+  }
+
+  .email-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #333;
+  }
+
+  .email-from {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  .email-from strong {
+    color: #DDD;
+  }
+
+  .email-subject-display {
+    font-size: 16px;
+    font-weight: 600;
+    color: #EEE;
+    margin-bottom: 8px;
+  }
+
+  .email-date {
+    font-size: 11px;
+    color: #666;
+  }
+
+  .email-body-display {
+    font-size: 13px;
+    color: #BBB;
+    line-height: 1.7;
+  }
+
+  /* Ruban simulé */
+  .ribbon {
+    background: #2D2D2D;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #3D3D3D;
+    font-size: 11px;
+    color: #AAA;
+    grid-column: 1 / -1;
+  }
+
+  .ribbon-btn {
+    background: #E8A0B4;
+    color: #1A1A1A;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ribbon-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .ribbon-label {
+    font-size: 10px;
+    color: #888;
+  }
+
+  /* ─── Add-in task pane (droite) ────────────────────────────────────────────── */
+  .addin-pane {
+    width: 320px;
+    background: #1A1A1A;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .addin-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+  }
+
+  /* En-tête */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #333;
+  }
+
+  .logo {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #F0F0F0;
+  }
+  .amp { color: #E8A0B4; }
+
+  .subtitle {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Info courriel */
+  .email-info {
+    background: #252525;
+    border-radius: 6px;
+    padding: 10px 12px;
+    border-left: 3px solid #E8A0B4;
+  }
+
+  .email-subject {
+    font-size: 12px;
+    color: #CCC;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Bouton */
+  .btn-reviser {
+    width: 100%;
+    padding: 12px 16px;
+    background: #E8A0B4;
+    color: #1A1A1A;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* Résultats */
+  .result-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .section {
+    background: #252525;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #E8A0B4;
+    padding: 8px 12px;
+    background: #2E2E2E;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-toggle {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .section-toggle:hover { background: #363636; }
+
+  .toggle-arrow {
+    font-size: 10px;
+    color: #888;
+    transition: transform 0.2s;
+  }
+
+  .toggle-arrow.open { transform: rotate(90deg); }
+
+  .section-primary {
+    border: 1px solid #E8A0B4;
+    box-shadow: 0 0 12px rgba(232,160,180,0.15);
+  }
+
+  .section-title-primary {
+    font-size: 12px;
+    background: #2A1E22;
+    color: #F0C0D0;
+    letter-spacing: 0.8px;
+  }
+
+  .changes-body li {
+    padding: 4px 0;
+    border-bottom: 1px solid #2E2E2E;
+  }
+
+  .changes-body li:last-child { border-bottom: none; }
+
+  .section-body {
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #DDD;
+    line-height: 1.6;
+  }
+
+  .section-body ul {
+    padding-left: 16px;
+    margin: 0;
+  }
+
+  .section-body li {
+    margin-bottom: 4px;
+  }
+
+  .section-body strong {
+    color: #F0F0F0;
+  }
+
+  .email-revised-edit {
+    display: block;
+    width: 100%;
+    min-height: 320px;
+    padding: 10px 12px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #EEE;
+    background: #1E1E1E;
+    border: none;
+    border-top: 1px solid #333;
+    border-bottom: 1px solid #333;
+    resize: vertical;
+    outline: none;
+    white-space: pre-wrap;
+    box-sizing: border-box;
+  }
+
+  .apply-bar {
+    padding: 8px 12px;
+    background: #252525;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-apply {
+    background: #E8A0B4;
+    color: #1A1A1A;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .warning { color: #FFB347; }
+
+  /* Wrapper avec ruban Outlook simulé */
+  .outlook-wrapper {
+    width: 900px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .outlook-titlebar {
+    background: #2B2B2B;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #3A3A3A;
+  }
+
+  .titlebar-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+  .dot-red { background: #FF5F57; }
+  .dot-yellow { background: #FFBD2E; }
+  .dot-green { background: #28C840; }
+
+  .titlebar-title {
+    font-size: 12px;
+    color: #888;
+    margin-left: 8px;
+  }
+
+  .outlook-body {
+    display: flex;
+  }
+</style>
+</head>
+<body>
+
+<div class="outlook-wrapper">
+
+  <!-- Barre de titre simulée -->
+  <div class="outlook-titlebar">
+    <div class="titlebar-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <span class="titlebar-title">RE : Suivi dossier refinancement — Outlook</span>
+  </div>
+
+  <!-- Ruban avec bouton A&V -->
+  <div class="ribbon">
+    <div class="ribbon-section">
+      <button class="ribbon-btn">✦ Réviser ce courriel</button>
+      <span class="ribbon-label">A&V Hypothèques</span>
+    </div>
+    <span style="color:#555;margin:0 8px;">|</span>
+    <span style="color:#666">Répondre</span>
+    <span style="color:#666">Transférer</span>
+    <span style="color:#666">Archiver</span>
+  </div>
+
+  <div class="outlook-body">
+
+    <!-- Courriel original (gauche) -->
+    <div class="email-pane">
+      <div class="email-header">
+        <div class="email-from"><strong>Viet Nguyen-Duong</strong> → Martin Bouchard</div>
+        <div class="email-subject-display">Suivi — dossier refinancement</div>
+        <div class="email-date">Dimanche 22 mars 2026, 10h14</div>
+      </div>
+      <div class="email-body-display">
+        Bonjour Monsieur Bouchard,<br><br>
+        Suite à notre échange de la semaine passée, je voulais vous faire un suivi concernant votre dossier de refinancement. Nous avons eu l'occasion d'analyser votre situation et nous sommes en mesure de vous proposer plusieurs options intéressantes qui pourraient vous permettre d'optimiser votre situation hypothécaire actuelle.<br><br>
+        Afin de pouvoir aller de l'avant avec votre dossier, il nous serait nécessaire de recevoir quelques documents supplémentaires de votre part, notamment vos deux dernières évaluations de revenus ainsi que votre relevé hypothécaire le plus récent.<br><br>
+        N'hésitez pas à communiquer avec nous si vous avez des questions.<br><br>
+        Cordialement,<br>
+        Viet
+      </div>
+    </div>
+
+    <!-- Add-in task pane (droite) -->
+    <div class="addin-pane">
+      <div class="addin-content">
+
+        <!-- En-tête -->
+        <div class="header">
+          <div class="logo">A<span class="amp">&</span>V</div>
+          <div class="subtitle">Révision de courriel</div>
+        </div>
+
+        <!-- Résultats -->
+        <div class="result-container">
+
+          <div class="section section-primary">
+            <div class="section-title section-title-primary">
+              ✦ Courriel révisé
+            </div>
+            <textarea class="email-revised-edit" spellcheck="true" lang="fr">Bonjour Monsieur Bouchard,
+
+Tel que discuté, on a analysé votre situation de refinancement et on voit de bonnes pistes à explorer. Pour avancer, j'aurais besoin de votre part :
+
+- Vos deux derniers avis de cotisation
+- Votre relevé hypothécaire le plus récent
+
+Dès que je les reçois, je reviens vers vous avec les options concrètes.
+
+Bonne journée,
+
+Viet Nguyen-Duong
+Courtier Hypothécaire | A&V
+(514) 836-6092</textarea>
+            <div class="apply-bar">
+              <button class="btn-apply">✓ Appliquer</button>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Changements clés</div>
+            <div class="section-body changes-body">
+              <ul>
+                <li><strong>Ton allégé</strong> — "on voit de bonnes pistes" remplace le jargon corporate</li>
+                <li><strong>Vocabulaire précis</strong> — "avis de cotisation" plutôt que "évaluations de revenus"</li>
+                <li><strong>Action claire</strong> — liste nette + prochaine étape explicite</li>
+                <li><strong>Vouvoiement cohérent</strong> — "Monsieur Bouchard" → "vous/votre" partout</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title section-toggle" onclick="toggleDiag(this)">
+              <span>Diagnostic</span>
+              <span class="toggle-arrow">▸</span>
+            </div>
+            <div class="section-body" style="display:none">
+              <ul>
+                <li><strong>Ton</strong> : Trop corporate — "nous sommes en mesure de", "il nous serait nécessaire" ne ressemblent pas à Viet</li>
+                <li><strong>Appel à l'action</strong> : "notamment" laisse entendre qu'il manque des documents non précisés</li>
+                <li class="warning">⚠️ "Plusieurs options intéressantes" sans les nommer crée des attentes floues</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleDiag(el) {
+  const body = el.nextElementSibling;
+  const arrow = el.querySelector('.toggle-arrow');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  arrow.classList.toggle('open', !isOpen);
+}
+</script>
+</body>
+</html>

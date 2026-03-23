@@ -1,0 +1,19 @@
+{
+  "name": "outlook-claude-addin",
+  "version": "1.0.0",
+  "description": "Add-in Outlook A&V — révision de courriels avec Claude AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "install-certs": "npx office-addin-dev-certs install"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "office-addin-dev-certs": "^1.12.0"
+  }
+}
