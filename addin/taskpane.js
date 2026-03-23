@@ -172,10 +172,10 @@ function plainTextToHtml(text) {
     if (/^\d+\.\s+/.test(trimmed)) {
       const items = [];
       while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
-        items.push(`<li>${inlineFormat(lines[i].trim().replace(/^\d+\.\s+/, ''))}</li>`);
+        items.push(`<li style="margin-bottom:4px;">${inlineFormat(lines[i].trim().replace(/^\d+\.\s+/, ''))}</li>`);
         i++;
       }
-      blocks.push(`<ol>${items.join('')}</ol>`);
+      blocks.push(`<ol style="margin:0 0 12px 0; padding-left:20px;">${items.join('')}</ol>`);
       continue;
     }
 
@@ -183,14 +183,14 @@ function plainTextToHtml(text) {
     if (/^[-*•]\s+/.test(trimmed)) {
       const items = [];
       while (i < lines.length && /^[-*•]\s+/.test(lines[i].trim())) {
-        items.push(`<li>${inlineFormat(lines[i].trim().replace(/^[-*•]\s+/, ''))}</li>`);
+        items.push(`<li style="margin-bottom:4px;">${inlineFormat(lines[i].trim().replace(/^[-*•]\s+/, ''))}</li>`);
         i++;
       }
-      blocks.push(`<ul>${items.join('')}</ul>`);
+      blocks.push(`<ul style="margin:0 0 12px 0; padding-left:20px;">${items.join('')}</ul>`);
       continue;
     }
 
-    // Paragraphe — collecter jusqu'à une ligne vide, --- ou bullet
+    // Paragraphe — chaque ligne non-vide consécutive = même paragraphe
     const paraLines = [];
     while (i < lines.length) {
       const t = lines[i].trim();
@@ -199,7 +199,7 @@ function plainTextToHtml(text) {
       i++;
     }
     if (paraLines.length > 0) {
-      blocks.push(`<p>${paraLines.join('<br>')}</p>`);
+      blocks.push(`<p style="margin:0 0 12px 0;">${paraLines.join('<br>')}</p>`);
     }
   }
 
