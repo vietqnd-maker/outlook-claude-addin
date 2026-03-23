@@ -231,32 +231,44 @@ body {
   word-break: break-word;
 }
 
-/* Courriel révisé — textarea éditable, pleine hauteur disponible */
+/* Courriel révisé — div contenteditable WYSIWYG, pleine hauteur disponible */
 .email-revised-edit {
   display: block;
   width: 100%;
   flex: 1;
   min-height: 0;
-  padding: 10px 10px;
+  padding: 12px 14px;
   font-family: 'Segoe UI', sans-serif;
-  font-size: 12.5px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.65;
   color: #EEE;
   background: #1E1E1E;
   border: none;
   border-top: 1px solid #333;
   border-bottom: 1px solid #333;
-  resize: none;
   outline: none;
-  white-space: pre-wrap;
   word-break: break-word;
   overflow-y: auto;
+  cursor: text;
 }
 
 .email-revised-edit:focus {
   background: #222;
   border-top-color: #E8A0B4;
 }
+
+/* Placeholder quand vide */
+.email-revised-edit:empty::before {
+  content: attr(data-placeholder);
+  color: #555;
+  pointer-events: none;
+}
+
+/* Formatage interne du contenu WYSIWYG */
+.email-revised-edit p  { margin: 0 0 12px 0; }
+.email-revised-edit ul { margin: 0 0 12px 0; padding-left: 20px; }
+.email-revised-edit ol { margin: 0 0 12px 0; padding-left: 20px; }
+.email-revised-edit li { margin-bottom: 4px; }
 
 /* Barre d'action sous la textarea */
 .apply-bar {

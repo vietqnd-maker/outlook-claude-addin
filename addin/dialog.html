@@ -27,7 +27,7 @@
     .logo { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
     .amp { color: #E8A0B4; }
     .title { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
-    textarea {
+    #content {
       flex: 1;
       width: 100%;
       padding: 16px;
@@ -38,8 +38,14 @@
       background: #1E1E1E;
       border: none;
       outline: none;
-      resize: none;
+      overflow-y: auto;
+      cursor: text;
+      word-break: break-word;
     }
+    #content p  { margin: 0 0 12px 0; }
+    #content ul { margin: 0 0 12px 0; padding-left: 20px; }
+    #content ol { margin: 0 0 12px 0; padding-left: 20px; }
+    #content li { margin-bottom: 4px; }
     .actions {
       padding: 10px 16px;
       background: #252525;
@@ -68,7 +74,7 @@
     <span class="logo">A<span class="amp">&</span>V</span>
     <span class="title">Courriel révisé — édition plein écran</span>
   </div>
-  <textarea id="content" spellcheck="true" lang="fr"></textarea>
+  <div id="content" contenteditable="true" spellcheck="true" lang="fr"></div>
   <div class="actions">
     <button class="btn btn-cancel" id="btnClose">Annuler</button>
     <button class="btn btn-apply" id="btnApply">✓ Appliquer dans Outlook</button>

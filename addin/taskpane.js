@@ -230,19 +230,10 @@ function afficherRevision(markdown) {
   const sections = parseRevision(markdown);
 
   if (sections.revision) {
-    const textarea = document.getElementById('emailRevised');
-    // Claude retourne du HTML — stocker pour injection directe dans Outlook
-    const isHtml = /^\s*<(p|ul|ol|strong|em|br)[\s>]/i.test(sections.revision);
-    if (isHtml) {
-      window._revisedHtml = sections.revision;
-      const displayText = htmlToPlainText(sections.revision);
-      textarea.value = displayText;
-      window._originalRevision = displayText;
-    } else {
-      window._revisedHtml = null;
-      textarea.value = sections.revision;
-      window._originalRevision = sections.revision;
-    }
+    const editor = document.getElementById('emailRevised');
+    // Injecter directement le HTML de Claude — qualité copy-paste native
+    editor.innerHTML = addOutlookStyles(sections.revision);
+    window._originalHtml = editor.innerHTML;
   }
   if (sections.changements) {
     document.getElementById('changements').innerHTML = formatMarkdown(sections.changements);
@@ -284,9 +275,9 @@ function formatMarkdown(text) {
 
 /* ─── Appliquer le courriel révisé dans Outlook ─────────────────────────────── */
 async function appliquerRevision() {
-  const text = document.getElementById('emailRevised').value;
+  const editor = document.getElementById('emailRevised');
   const btn = document.getElementById('btnApply');
-  if (!text) return;
+  if (!editor.innerHTML.trim()) return;
 
   btn.disabled = true;
   btn.textContent = '…';
@@ -296,17 +287,13 @@ async function appliquerRevision() {
     const currentHtml = await getEmailBodyHtml(Office.context.mailbox.item);
     const { signatureHtml } = splitSignatureHtml(currentHtml);
 
-    // Si Claude a retourné du HTML ET que l'utilisateur n'a pas édité → HTML natif
-    const textEdited = !window._revisedHtml ||
-      text.trim() !== htmlToPlainText(window._revisedHtml).trim();
-    const bodyHtml = textEdited
-      ? plainTextToHtml(text)
-      : addOutlookStyles(window._revisedHtml);
+    // HTML du div contenteditable → injection directe avec styles Outlook
+    const bodyHtml = addOutlookStyles(editor.innerHTML);
     const revisedHtml = bodyHtml + (signatureHtml || '');
 
-    // Si Viet a modifié la révision → envoyer le feedback pour apprendre
-    if (window._originalRevision && text.trim() !== window._originalRevision.trim()) {
-      envoyerFeedback(window._originalRevision, text);
+    // Si modifié → envoyer le feedback pour apprendre
+    if (window._originalHtml && editor.innerHTML !== window._originalHtml) {
+      envoyerFeedback(window._originalHtml, editor.innerHTML);
     }
 
     await new Promise((resolve, reject) => {
@@ -355,11 +342,11 @@ async function envoyerFeedback(original, revised) {
 
 /* ─── Bouton plein écran ─────────────────────────────────────────────────────── */
 function ouvrirPleinEcran() {
-  const text = document.getElementById('emailRevised').value;
-  if (!text) return;
+  const html = document.getElementById('emailRevised').innerHTML;
+  if (!html.trim()) return;
 
-  // Encoder le texte en base64 pour le passer via l'URL hash
-  const encoded = btoa(unescape(encodeURIComponent(text)));
+  // Encoder le HTML en base64 pour le passer via l'URL hash
+  const encoded = btoa(unescape(encodeURIComponent(html)));
   const dialogUrl = `https://vietqnd-maker.github.io/outlook-claude-addin/addin/dialog.html#${encoded}`;
 
   Office.context.ui.displayDialogAsync(dialogUrl, { height: 80, width: 65 }, (result) => {
@@ -371,8 +358,7 @@ function ouvrirPleinEcran() {
     dialog.addEventHandler(Office.EventType.DialogMessageReceived, (msg) => {
       const data = JSON.parse(msg.message);
       if (data.action === 'apply') {
-        const textarea = document.getElementById('emailRevised');
-        textarea.value = data.text;
+        document.getElementById('emailRevised').innerHTML = data.html;
         dialog.close();
         appliquerRevision();
       } else {
