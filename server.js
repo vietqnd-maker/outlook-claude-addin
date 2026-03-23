@@ -66,6 +66,7 @@ Détermine automatiquement :
 - Vocabulaire hypothécaire québécois naturel (taux, terme, amortissement, mise de fonds, prêteur, SCHL, équité, ratio ABD/ATD)
 - Ne jamais promettre un taux ou une approbation sans que le dossier soit confirmé
 - **Ne jamais inclure de signature dans le courriel révisé** — la signature est gérée séparément
+- **Ne jamais modifier ni proposer de changement à l'objet du courriel** — l'objet est fourni pour contexte seulement
 
 ## Format de réponse obligatoire
 
@@ -117,7 +118,18 @@ function buildSystemPrompt() {
 // ─── Express app ──────────────────────────────────────────────────────────────
 const app = express();
 
-app.use(cors({ origin: 'https://localhost:3000' }));
+// Autoriser GitHub Pages + localhost, et Private Network Access (Chrome/Edge 94+)
+app.use(cors({
+  origin: [
+    'https://vietqnd-maker.github.io',
+    'https://localhost:3000',
+  ],
+  methods: ['GET', 'POST', 'OPTIONS'],
+}));
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  next();
+});
 app.use(express.json({ limit: '50kb' }));
 app.use(express.static(path.join(__dirname, 'addin')));
 
