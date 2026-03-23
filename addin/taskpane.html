@@ -30,17 +30,23 @@
 
       <!-- Courriel révisé — en évidence -->
       <div class="section section-primary" id="sectionRevision">
-        <div class="section-title section-title-primary">✦ Courriel révisé</div>
+        <div class="section-title section-title-primary">
+          <span>✦ Courriel révisé</span>
+          <button class="btn-fullscreen" id="btnFullscreen" title="Ouvrir en plein écran">⤢</button>
+        </div>
         <textarea class="email-revised-edit" id="emailRevised" placeholder="Le courriel révisé apparaîtra ici…" spellcheck="true" lang="fr"></textarea>
         <div class="apply-bar">
           <button class="btn-apply" id="btnApply">✓ Appliquer</button>
         </div>
       </div>
 
-      <!-- Changements clés -->
+      <!-- Changements clés — replié par défaut -->
       <div class="section" id="sectionChangements">
-        <div class="section-title">Changements clés</div>
-        <div class="section-body changes-body" id="changements"></div>
+        <div class="section-title section-toggle" id="toggleChangements">
+          <span>Changements clés</span>
+          <span class="toggle-arrow">▸</span>
+        </div>
+        <div class="section-body changes-body" id="changements" style="display:none"></div>
       </div>
 
       <!-- Diagnostic — réduit par défaut, en bas -->

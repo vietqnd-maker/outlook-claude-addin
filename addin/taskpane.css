@@ -166,6 +166,25 @@ body {
   transform: rotate(90deg);
 }
 
+/* Bouton plein écran dans le header */
+.btn-fullscreen {
+  background: transparent;
+  border: 1px solid rgba(232, 160, 180, 0.4);
+  color: #E8A0B4;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.btn-fullscreen:hover { background: rgba(232, 160, 180, 0.15); }
+
 /* Courriel révisé — mis en évidence */
 .section-primary {
   border: 1px solid #E8A0B4;

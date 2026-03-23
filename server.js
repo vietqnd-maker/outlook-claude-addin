@@ -80,7 +80,6 @@ Le courriel doit avoir l'air écrit par un humain, pas généré par une IA. App
 - Pas de gras sauf si le brouillon original en contient — un humain met en gras zéro ou une chose
 
 **Mots et formules interdits :**
-- "N'hésitez pas à" / "N'hésite pas à" → supprimer ou reformuler directement
 - "Je me permets de" → formuler sans détour
 - "Dans le cadre de" → remplacer par "Pour", "Dans", "Avec"
 - "Suite à notre échange" → "Comme on en parlait" ou mentionner directement le sujet

@@ -6,7 +6,19 @@ Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
     loadEmailInfo();
     document.getElementById('btnApply').addEventListener('click', appliquerRevision);
+    document.getElementById('btnFullscreen').addEventListener('click', ouvrirPleinEcran);
     document.getElementById('emailRevised').addEventListener('input', (e) => autoResizeTextarea(e.target));
+
+    // Toggle Changements clés
+    document.getElementById('toggleChangements').addEventListener('click', () => {
+      const body = document.getElementById('changements');
+      const arrow = document.querySelector('#toggleChangements .toggle-arrow');
+      const isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : 'block';
+      arrow.classList.toggle('open', !isOpen);
+    });
+
+    // Toggle Diagnostic
     document.getElementById('toggleDiagnostic').addEventListener('click', () => {
       const body = document.getElementById('diagnostic');
       const arrow = document.querySelector('#toggleDiagnostic .toggle-arrow');
@@ -257,6 +269,36 @@ async function envoyerFeedback(original, revised) {
   } catch (err) {
     console.warn('Feedback non envoyé:', err.message);
   }
+}
+
+/* ─── Bouton plein écran ─────────────────────────────────────────────────────── */
+function ouvrirPleinEcran() {
+  const text = document.getElementById('emailRevised').value;
+  if (!text) return;
+
+  // Encoder le texte en base64 pour le passer via l'URL hash
+  const encoded = btoa(unescape(encodeURIComponent(text)));
+  const dialogUrl = `https://vietqnd-maker.github.io/outlook-claude-addin/addin/dialog.html#${encoded}`;
+
+  Office.context.ui.displayDialogAsync(dialogUrl, { height: 80, width: 65 }, (result) => {
+    if (result.status === Office.AsyncResultStatus.Failed) {
+      showError('Impossible d\'ouvrir la fenêtre plein écran.');
+      return;
+    }
+    const dialog = result.value;
+    dialog.addEventHandler(Office.EventType.DialogMessageReceived, (msg) => {
+      const data = JSON.parse(msg.message);
+      if (data.action === 'apply') {
+        const textarea = document.getElementById('emailRevised');
+        textarea.value = data.text;
+        autoResizeTextarea(textarea);
+        dialog.close();
+        appliquerRevision();
+      } else {
+        dialog.close();
+      }
+    });
+  });
 }
 
 /* ─── Auto-resize textarea selon le contenu ─────────────────────────────────── */
