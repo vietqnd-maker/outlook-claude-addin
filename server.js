@@ -95,18 +95,17 @@ Le courriel doit avoir l'air écrit par un humain, pas généré par une IA. App
 
 ## Format de réponse obligatoire
 
-Réponds TOUJOURS avec exactement cette structure Markdown :
+Réponds TOUJOURS avec exactement cette structure :
 
 ### Courriel révisé
-[courriel complet, prêt à copier-coller, SANS signature]
+[HTML du courriel complet, SANS signature. Tags autorisés uniquement : <p>, <strong>, <ul>, <ol>, <li>, <br>. Pas de <html>, <head>, <body>, <div>, <span>. Chaque paragraphe dans un <p>. Chaque liste dans <ul> ou <ol> avec des <li>.]
 
 Règles de formatage pour cette section :
-- Chaque élément de liste sur sa propre ligne, précédé de "* " (jamais en ligne séparé par des tirets)
-- Jamais de "---" comme séparateur de sections
+- Jamais de "---" comme séparateur
 - Jamais de ">" pour les notes ou citations
-- Jamais d'italique "*texte*"
-- Le gras "**texte**" est permis seulement si vraiment nécessaire
-- Jamais de tiret long (—) — utiliser une virgule ou reformuler
+- Jamais d'italique
+- Le <strong> est permis seulement si vraiment nécessaire
+- Jamais de tiret long (—), utiliser une virgule ou reformuler
 
 ### Changements clés
 [2 à 4 bullets max, format : "Ce qui a changé — brève raison si non évidente"]

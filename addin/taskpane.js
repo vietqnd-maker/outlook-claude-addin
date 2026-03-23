@@ -149,6 +149,15 @@ function htmlToPlainText(html) {
     .trim();
 }
 
+/* ─── Ajouter styles inline Outlook sur HTML natif de Claude ────────────────── */
+function addOutlookStyles(html) {
+  return html
+    .replace(/<p(?![^>]*style)[^>]*>/gi, '<p style="margin:0 0 12px 0;">')
+    .replace(/<ul(?![^>]*style)[^>]*>/gi, '<ul style="margin:0 0 12px 0; padding-left:20px;">')
+    .replace(/<ol(?![^>]*style)[^>]*>/gi, '<ol style="margin:0 0 12px 0; padding-left:20px;">')
+    .replace(/<li(?![^>]*style)[^>]*>/gi, '<li style="margin-bottom:4px;">');
+}
+
 /* ─── Convertir texte brut de Claude en HTML pour Outlook ───────────────────── */
 function plainTextToHtml(text) {
   const lines = text.split('\n');
@@ -222,8 +231,18 @@ function afficherRevision(markdown) {
 
   if (sections.revision) {
     const textarea = document.getElementById('emailRevised');
-    textarea.value = sections.revision;
-    window._originalRevision = sections.revision;
+    // Claude retourne du HTML — stocker pour injection directe dans Outlook
+    const isHtml = /^\s*<(p|ul|ol|strong|em|br)[\s>]/i.test(sections.revision);
+    if (isHtml) {
+      window._revisedHtml = sections.revision;
+      const displayText = htmlToPlainText(sections.revision);
+      textarea.value = displayText;
+      window._originalRevision = displayText;
+    } else {
+      window._revisedHtml = null;
+      textarea.value = sections.revision;
+      window._originalRevision = sections.revision;
+    }
   }
   if (sections.changements) {
     document.getElementById('changements').innerHTML = formatMarkdown(sections.changements);
@@ -277,7 +296,13 @@ async function appliquerRevision() {
     const currentHtml = await getEmailBodyHtml(Office.context.mailbox.item);
     const { signatureHtml } = splitSignatureHtml(currentHtml);
 
-    const revisedHtml = plainTextToHtml(text) + (signatureHtml || '');
+    // Si Claude a retourné du HTML ET que l'utilisateur n'a pas édité → HTML natif
+    const textEdited = !window._revisedHtml ||
+      text.trim() !== htmlToPlainText(window._revisedHtml).trim();
+    const bodyHtml = textEdited
+      ? plainTextToHtml(text)
+      : addOutlookStyles(window._revisedHtml);
+    const revisedHtml = bodyHtml + (signatureHtml || '');
 
     // Si Viet a modifié la révision → envoyer le feedback pour apprendre
     if (window._originalRevision && text.trim() !== window._originalRevision.trim()) {
