@@ -185,7 +185,13 @@ app.post('/api/reviser', async (req, res) => {
     const response = await client.messages.create({
       model: MODEL,
       max_tokens: 4096,
-      system: buildSystemPrompt(),
+      system: [
+        {
+          type: 'text',
+          text: buildSystemPrompt(),
+          cache_control: { type: 'ephemeral' },  // cache 5 min — économise ~70% des tokens système
+        },
+      ],
       messages: [{ role: 'user', content: userMessage }],
     });
 
