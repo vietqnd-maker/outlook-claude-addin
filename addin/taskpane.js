@@ -335,9 +335,14 @@ async function afficherDebugSignature() {
   const html = await getEmailBodyHtml(item);
   const { bodyHtml, signatureHtml } = splitSignatureHtml(html);
   const detected = signatureHtml ? '✅ SIGNATURE DÉTECTÉE' : '❌ SIGNATURE NON DÉTECTÉE';
-  // Montrer les 2000 derniers caractères — c'est là que la signature se trouve
-  const tail = html.substring(Math.max(0, html.length - 2000));
-  document.getElementById('debugOutput').value = `${detected}\n\nFIN DU HTML :\n${tail}`;
+  const sigPreview = signatureHtml ? signatureHtml.substring(0, 800) : '(aucune)';
+  const info = [
+    detected,
+    `Longueur corps : ${bodyHtml.length} chars`,
+    `Longueur signature : ${signatureHtml.length} chars`,
+    `\nDÉBUT DE LA SIGNATURE DÉTECTÉE :\n${sigPreview}`,
+  ].join('\n');
+  document.getElementById('debugOutput').value = info;
   document.getElementById('debugBox').style.display = 'block';
 }
 
