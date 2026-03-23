@@ -33,17 +33,16 @@
   </Requirements>
 
   <FormSettings>
-    <Form xsi:type="ItemRead">
+    <Form xsi:type="ItemEdit">
       <DesktopSettings>
         <SourceLocation DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/taskpane.html"/>
-        <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
     </Form>
   </FormSettings>
 
   <Permissions>ReadWriteMailbox</Permissions>
   <Rule xsi:type="RuleCollection" Mode="Or">
-    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit"/>
   </Rule>
 
   <DisableEntityHighlighting>false</DisableEntityHighlighting>
@@ -60,8 +59,8 @@
         <DesktopFormFactor>
           <FunctionFile resid="Commands.Url"/>
 
-          <!-- Bouton dans le ruban — lecture de courriel -->
-          <ExtensionPoint xsi:type="MessageReadCommandSurface">
+          <!-- Bouton dans le ruban — composition de courriel -->
+          <ExtensionPoint xsi:type="MessageComposeCommandSurface">
             <OfficeTab id="TabDefault">
               <Group id="msgReadGroup">
                 <Label resid="GroupLabel"/>

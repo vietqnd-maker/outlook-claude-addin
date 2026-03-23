@@ -50,9 +50,9 @@ async function reviserCourriel() {
     const { body: emailBody, signature } = splitSignature(rawBody);
     window._emailSignature = signature; // conservée pour réinsertion
 
-    // Métadonnées utiles pour le contexte
-    const subject = item.subject || '';
-    const from = item.from ? item.from.emailAddress : '';
+    // Métadonnées — APIs différentes en compose vs lecture
+    const subject = await getSubject(item);
+    const from = item.from?.emailAddress || Office.context.mailbox.userProfile.emailAddress || '';
 
     // Appel au serveur proxy local (corps sans signature)
     const response = await fetch(`${SERVER_URL}/api/reviser`, {
@@ -85,6 +85,16 @@ function getEmailBody(item) {
       } else {
         reject(new Error('Impossible de lire le corps du courriel.'));
       }
+    });
+  });
+}
+
+/* ─── Lecture du sujet (compose = objet async, lecture = string) ─────────────── */
+function getSubject(item) {
+  if (typeof item.subject === 'string') return Promise.resolve(item.subject);
+  return new Promise((resolve) => {
+    item.subject.getAsync((result) => {
+      resolve(result.status === Office.AsyncResultStatus.Succeeded ? result.value || '' : '');
     });
   });
 }
