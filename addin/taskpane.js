@@ -7,6 +7,7 @@ Office.onReady((info) => {
     loadEmailInfo();
     document.getElementById('btnApply').addEventListener('click', appliquerRevision);
     document.getElementById('btnFullscreen').addEventListener('click', ouvrirPleinEcran);
+    document.getElementById('btnDebug').addEventListener('click', afficherDebugSignature);
     document.getElementById('emailRevised').addEventListener('input', (e) => autoResizeTextarea(e.target));
 
     // Toggle Changements clés
@@ -325,6 +326,17 @@ async function envoyerFeedback(original, revised) {
   } catch (err) {
     console.warn('Feedback non envoyé:', err.message);
   }
+}
+
+/* ─── Debug temporaire — afficher le HTML brut pour diagnostiquer la signature ── */
+async function afficherDebugSignature() {
+  const item = Office.context.mailbox.item;
+  if (!item) return;
+  const html = await getEmailBodyHtml(item);
+  // Montrer les 3000 premiers caractères — suffisant pour voir la structure de signature
+  const preview = html.substring(0, 3000);
+  document.getElementById('debugOutput').value = preview;
+  document.getElementById('debugBox').style.display = 'block';
 }
 
 /* ─── Bouton plein écran ─────────────────────────────────────────────────────── */
