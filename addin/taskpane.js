@@ -333,9 +333,11 @@ async function afficherDebugSignature() {
   const item = Office.context.mailbox.item;
   if (!item) return;
   const html = await getEmailBodyHtml(item);
-  // Montrer les 3000 premiers caractères — suffisant pour voir la structure de signature
-  const preview = html.substring(0, 3000);
-  document.getElementById('debugOutput').value = preview;
+  const { bodyHtml, signatureHtml } = splitSignatureHtml(html);
+  const detected = signatureHtml ? '✅ SIGNATURE DÉTECTÉE' : '❌ SIGNATURE NON DÉTECTÉE';
+  // Montrer les 2000 derniers caractères — c'est là que la signature se trouve
+  const tail = html.substring(Math.max(0, html.length - 2000));
+  document.getElementById('debugOutput').value = `${detected}\n\nFIN DU HTML :\n${tail}`;
   document.getElementById('debugBox').style.display = 'block';
 }
 
