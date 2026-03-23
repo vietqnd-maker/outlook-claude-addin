@@ -280,35 +280,50 @@ function formatMarkdown(text) {
 }
 
 /* ─── Appliquer le courriel révisé dans Outlook ─────────────────────────────── */
-function appliquerRevision() {
+async function appliquerRevision() {
   const text = document.getElementById('emailRevised').value;
   const btn = document.getElementById('btnApply');
   if (!text) return;
 
-  // Convertir le texte révisé en HTML et réinsérer la signature
-  const revisedHtml = plainTextToHtml(text) + (window._emailSignature || '');
+  btn.disabled = true;
+  btn.textContent = '…';
 
-  // Si Viet a modifié la révision → envoyer le feedback pour apprendre
-  if (window._originalRevision && text.trim() !== window._originalRevision.trim()) {
-    envoyerFeedback(window._originalRevision, text);
-  }
+  try {
+    // Relire le corps HTML au moment d'appliquer — signature toujours fraîche
+    const currentHtml = await getEmailBodyHtml(Office.context.mailbox.item);
+    const { signatureHtml } = splitSignatureHtml(currentHtml);
 
-  Office.context.mailbox.item.body.setAsync(
-    revisedHtml,
-    { coercionType: Office.CoercionType.Html },
-    (result) => {
-      if (result.status === Office.AsyncResultStatus.Succeeded) {
-        btn.textContent = '✓ Appliqué!';
-        btn.classList.add('applied');
-        setTimeout(() => {
-          btn.textContent = '✓ Appliquer';
-          btn.classList.remove('applied');
-        }, 2500);
-      } else {
-        showError('Impossible d\'appliquer : ' + (result.error?.message || 'erreur inconnue'));
-      }
+    const revisedHtml = plainTextToHtml(text) + (signatureHtml || '');
+
+    // Si Viet a modifié la révision → envoyer le feedback pour apprendre
+    if (window._originalRevision && text.trim() !== window._originalRevision.trim()) {
+      envoyerFeedback(window._originalRevision, text);
     }
-  );
+
+    await new Promise((resolve, reject) => {
+      Office.context.mailbox.item.body.setAsync(
+        revisedHtml,
+        { coercionType: Office.CoercionType.Html },
+        (result) => {
+          if (result.status === Office.AsyncResultStatus.Succeeded) resolve();
+          else reject(new Error(result.error?.message || 'erreur inconnue'));
+        }
+      );
+    });
+
+    btn.textContent = '✓ Appliqué!';
+    btn.classList.add('applied');
+    setTimeout(() => {
+      btn.textContent = '✓ Appliquer';
+      btn.classList.remove('applied');
+      btn.disabled = false;
+    }, 2500);
+
+  } catch (err) {
+    showError('Impossible d\'appliquer : ' + err.message);
+    btn.textContent = '✓ Appliquer';
+    btn.disabled = false;
+  }
 }
 
 /* ─── Feedback d'apprentissage — envoyer les modifications de Viet ───────────── */
