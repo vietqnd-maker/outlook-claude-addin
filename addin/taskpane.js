@@ -13,7 +13,6 @@ Office.onReady((info) => {
       body.style.display = isOpen ? 'none' : 'block';
       arrow.classList.toggle('open', !isOpen);
     });
-    // Lancer la révision automatiquement dès l'ouverture du panneau
     reviserCourriel();
   }
 });
@@ -43,22 +42,25 @@ async function reviserCourriel() {
   window._originalRevision = null;
 
   try {
-    // Lire le corps du courriel en texte brut
-    const rawBody = await getEmailBody(item);
+    // Lire le corps en HTML pour préserver la mise en forme et détecter la signature
+    const rawHtml = await getEmailBodyHtml(item);
 
-    // Extraire et mettre de côté la signature
-    const { body: emailBody, signature } = splitSignature(rawBody);
-    window._emailSignature = signature; // conservée pour réinsertion
+    // Extraire la signature HTML et le corps texte à envoyer à Claude
+    const { bodyHtml, signatureHtml } = splitSignatureHtml(rawHtml);
+    window._emailSignature = signatureHtml;
+
+    // Convertir le HTML en texte brut pour Claude
+    const emailBodyText = htmlToPlainText(bodyHtml);
 
     // Métadonnées — APIs différentes en compose vs lecture
     const subject = await getSubject(item);
     const from = item.from?.emailAddress || Office.context.mailbox.userProfile.emailAddress || '';
 
-    // Appel au serveur proxy local (corps sans signature)
+    // Appel au serveur proxy local
     const response = await fetch(`${SERVER_URL}/api/reviser`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body: emailBody, subject, from }),
+      body: JSON.stringify({ body: emailBodyText, subject, from }),
     });
 
     if (!response.ok) {
@@ -76,10 +78,10 @@ async function reviserCourriel() {
   }
 }
 
-/* ─── Lecture du corps du courriel (Promise) ────────────────────────────────── */
-function getEmailBody(item) {
+/* ─── Lecture du corps en HTML ───────────────────────────────────────────────── */
+function getEmailBodyHtml(item) {
   return new Promise((resolve, reject) => {
-    item.body.getAsync(Office.CoercionType.Text, { asyncContext: 'body' }, (result) => {
+    item.body.getAsync(Office.CoercionType.Html, (result) => {
       if (result.status === Office.AsyncResultStatus.Succeeded) {
         resolve(result.value || '');
       } else {
@@ -99,42 +101,70 @@ function getSubject(item) {
   });
 }
 
-/* ─── Détection et extraction de la signature ───────────────────────────────── */
-function splitSignature(body) {
-  // Séparateur standard --
-  const dashSep = body.search(/\n--[ \t]*\n/);
-  if (dashSep !== -1) {
-    return { body: body.substring(0, dashSep).trim(), signature: body.substring(dashSep) };
+/* ─── Détection et extraction de la signature Outlook (HTML) ─────────────────── */
+function splitSignatureHtml(html) {
+  // Outlook insère la signature dans un <div id="Signature"> ou <div class="gmail_signature">
+  const sigPatterns = [
+    /(<div[^>]+id=["']Signature["'][^>]*>[\s\S]*)/i,
+    /(<div[^>]+class=["'][^"']*signature[^"']*["'][^>]*>[\s\S]*)/i,
+  ];
+
+  for (const pattern of sigPatterns) {
+    const match = html.match(pattern);
+    if (match) {
+      const sigStart = html.indexOf(match[1]);
+      return {
+        bodyHtml: html.substring(0, sigStart),
+        signatureHtml: match[1],
+      };
+    }
   }
 
-  // Heuristique : détecter la signature après la formule de politesse + nom
-  // (ex: "Bonne journée,\n\nViet Nguyen-Duong\nCourtier...")
-  const closingMatch = body.match(
-    /(Cordialement|Bonne journée|Bonne fin|Merci|À bientôt|Sincèrement)[^\n]*\n[\s\S]{0,10}\n([\s\S]+)$/i
-  );
-  if (closingMatch && closingMatch[2] && closingMatch[2].trim().split('\n').length >= 2) {
-    const sigStart = body.lastIndexOf(closingMatch[2]);
-    return {
-      body: body.substring(0, sigStart).trim(),
-      signature: '\n\n' + closingMatch[2].trim()
-    };
-  }
+  // Fallback : pas de signature détectée
+  return { bodyHtml: html, signatureHtml: '' };
+}
 
-  return { body: body.trim(), signature: '' };
+/* ─── Convertir HTML en texte brut pour Claude ───────────────────────────────── */
+function htmlToPlainText(html) {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '- ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/* ─── Convertir texte brut de Claude en HTML pour Outlook ───────────────────── */
+function plainTextToHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .split('\n\n')
+    .map(para => para.trim())
+    .filter(para => para.length > 0)
+    .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+    .join('');
 }
 
 /* ─── Affichage des résultats ────────────────────────────────────────────────── */
 function afficherRevision(markdown) {
-  // Parser les 3 sections du format de réponse Claude
   const sections = parseRevision(markdown);
 
   if (sections.diagnostic) {
     document.getElementById('diagnostic').innerHTML = formatMarkdown(sections.diagnostic);
   }
   if (sections.revision) {
-    // textarea — on assigne .value directement (éditable par Viet avant d'appliquer)
     document.getElementById('emailRevised').value = sections.revision;
-    // Mémoriser la version originale de Claude pour détecter les modifications de Viet
     window._originalRevision = sections.revision;
   }
   if (sections.changements) {
@@ -156,7 +186,6 @@ function parseRevision(text) {
   if (revMatch)  sections.revision    = revMatch[1].trim();
   if (chgMatch)  sections.changements = chgMatch[1].trim();
 
-  // Fallback : si le parsing échoue, afficher le tout dans revision
   if (!sections.revision && text.trim()) {
     sections.revision = text.trim();
   }
@@ -167,16 +196,11 @@ function parseRevision(text) {
 /* ─── Convertir Markdown basique en HTML ─────────────────────────────────────── */
 function formatMarkdown(text) {
   return text
-    // Gras **texte**
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Bullets - texte
     .replace(/^[-•]\s+(.+)/gm, '<li>$1</li>')
-    // Alertes ⚠️
     .replace(/(⚠️[^\n]+)/g, '<span class="warning">$1</span>')
-    // Sauts de ligne
     .replace(/\n{2,}/g, '<br><br>')
     .replace(/\n/g, '<br>')
-    // Envelopper les <li> dans <ul>
     .replace(/(<li>.*?<\/li>(\s*<br>)*)+/gs, (match) => {
       const items = match.replace(/<br>/g, '').trim();
       return `<ul>${items}</ul>`;
@@ -189,8 +213,8 @@ function appliquerRevision() {
   const btn = document.getElementById('btnApply');
   if (!text) return;
 
-  // Réinsérer la signature qui avait été mise de côté
-  const fullText = window._emailSignature ? text + '\n\n' + window._emailSignature : text;
+  // Convertir le texte révisé en HTML et réinsérer la signature
+  const revisedHtml = plainTextToHtml(text) + (window._emailSignature || '');
 
   // Si Viet a modifié la révision → envoyer le feedback pour apprendre
   if (window._originalRevision && text.trim() !== window._originalRevision.trim()) {
@@ -198,8 +222,8 @@ function appliquerRevision() {
   }
 
   Office.context.mailbox.item.body.setAsync(
-    fullText,
-    { coercionType: Office.CoercionType.Text },
+    revisedHtml,
+    { coercionType: Office.CoercionType.Html },
     (result) => {
       if (result.status === Office.AsyncResultStatus.Succeeded) {
         btn.textContent = '✓ Appliqué!';
@@ -228,7 +252,6 @@ async function envoyerFeedback(original, revised) {
       showError('⚠️ Incohérence dans tes préférences apprises : ' + data.incoherences.join(' — '));
     }
   } catch (err) {
-    // Silencieux — le feedback n'est pas critique
     console.warn('Feedback non envoyé:', err.message);
   }
 }
