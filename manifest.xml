@@ -14,8 +14,8 @@
   <DisplayName DefaultValue="Réviser avec A&amp;V"/>
   <Description DefaultValue="Révise et améliore tes courriels avec Claude AI, dans le style A&amp;V Hypothèques."/>
 
-  <IconUrl DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/assets/icon-64.png"/>
-  <HighResolutionIconUrl DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/assets/icon-128.png"/>
+  <IconUrl DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/assets/icon-80.png"/>
+  <HighResolutionIconUrl DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/assets/icon-80.png"/>
   <SupportUrl DefaultValue="https://avhypotheques.com"/>
 
   <AppDomains>
