@@ -5,6 +5,7 @@ validate_addin.py — Validates the Outlook add-in project for common issues.
 Checks:
 1. DOM consistency: every getElementById/querySelector in JS must have a matching ID in HTML
 2. Manifest validity: runs npx office-addin-manifest validate
+3. Server CORS config: GitHub Pages origin whitelisted + Private Network Access header present
 """
 
 import io
@@ -71,6 +72,45 @@ try:
         issues.append(("Manifest XML", manifest_issues))
 except Exception as e:
     issues.append(("Manifest XML", [f"Impossible de lancer le validateur : {e}"]))
+
+# ─── 3. Server CORS config ───────────────────────────────────────────────────
+
+SERVER_JS = PROJECT_ROOT / "server.js"
+TASKPANE_JS = ADDIN_DIR / "taskpane.js"
+cors_issues = []
+
+try:
+    server_src = SERVER_JS.read_text(encoding="utf-8", errors="ignore")
+    taskpane_src = TASKPANE_JS.read_text(encoding="utf-8", errors="ignore")
+
+    # Extraire l'URL du serveur dans taskpane.js
+    server_url_match = re.search(r"SERVER_URL\s*=\s*['\"]([^'\"]+)['\"]", taskpane_src)
+    server_url = server_url_match.group(1) if server_url_match else None
+
+    # Extraire les origines CORS autorisées dans server.js
+    cors_origins = re.findall(r"['\"]https?://[^'\"]+['\"]", server_src[server_src.find("cors("):server_src.find("cors(")+500] if "cors(" in server_src else "")
+    cors_origins = [o.strip("'\"") for o in cors_origins]
+
+    # Vérifier que GitHub Pages est dans les origines CORS
+    gh_pages_origins = [o for o in cors_origins if "github.io" in o]
+    if not gh_pages_origins:
+        cors_issues.append("  - server.js : GitHub Pages (github.io) absent des origines CORS autorisées")
+
+    # Vérifier le header Private Network Access
+    if "Access-Control-Allow-Private-Network" not in server_src:
+        cors_issues.append("  - server.js : header 'Access-Control-Allow-Private-Network: true' manquant (bloque les requêtes depuis GitHub Pages vers localhost)")
+
+    # Vérifier que SERVER_URL dans taskpane.js est cohérent avec le port du serveur
+    port_match = re.search(r"PORT\s*=\s*process\.env\.PORT\s*\|\|\s*(\d+)", server_src)
+    server_port = port_match.group(1) if port_match else "3000"
+    if server_url and f":{server_port}" not in server_url:
+        cors_issues.append(f"  - taskpane.js : SERVER_URL='{server_url}' ne correspond pas au port {server_port} du serveur")
+
+except Exception as e:
+    cors_issues.append(f"  - Impossible de lire server.js : {e}")
+
+if cors_issues:
+    issues.append(("Configuration serveur (CORS)", cors_issues))
 
 # ─── Report ──────────────────────────────────────────────────────────────────
 
