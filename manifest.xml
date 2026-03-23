@@ -14,12 +14,12 @@
   <DisplayName DefaultValue="Réviser avec A&amp;V"/>
   <Description DefaultValue="Révise et améliore tes courriels avec Claude AI, dans le style A&amp;V Hypothèques."/>
 
-  <IconUrl DefaultValue="https://localhost:3000/addin/assets/icon-64.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/addin/assets/icon-128.png"/>
+  <IconUrl DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/assets/icon-64.png"/>
+  <HighResolutionIconUrl DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/assets/icon-128.png"/>
   <SupportUrl DefaultValue="https://avhypotheques.com"/>
 
   <AppDomains>
-    <AppDomain>https://localhost:3000</AppDomain>
+    <AppDomain>https://vietqnd-maker.github.io</AppDomain>
   </AppDomains>
 
   <Hosts>
@@ -35,7 +35,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://localhost:3000/addin/taskpane.html"/>
+        <SourceLocation DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/taskpane.html"/>
         <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
     </Form>
@@ -90,13 +90,13 @@
 
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/addin/assets/icon-16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/addin/assets/icon-32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/addin/assets/icon-80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/assets/icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/assets/icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/assets/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/addin/commands.html"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/addin/taskpane.html"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://vietqnd-maker.github.io/outlook-claude-addin/addin/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="A&amp;V Hypothèques"/>
