@@ -106,11 +106,11 @@ Réponds TOUJOURS avec exactement cette structure Markdown :
 [courriel complet, prêt à copier-coller, SANS signature]
 
 Règles de formatage pour cette section :
-- Chaque élément de liste sur sa propre ligne, précédé de `* ` (jamais en ligne séparé par des tirets)
-- Jamais de `---` comme séparateur de sections
-- Jamais de `>` pour les notes ou citations
-- Jamais d'italique `*texte*`
-- Le gras `**texte**` est permis seulement si vraiment nécessaire
+- Chaque élément de liste sur sa propre ligne, précédé de "* " (jamais en ligne séparé par des tirets)
+- Jamais de "---" comme séparateur de sections
+- Jamais de ">" pour les notes ou citations
+- Jamais d'italique "*texte*"
+- Le gras "**texte**" est permis seulement si vraiment nécessaire
 - Jamais de tiret long (—) — utiliser une virgule ou reformuler
 
 ### Changements clés
