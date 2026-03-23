@@ -116,10 +116,12 @@ function getSubject(item) {
 
 /* ─── Détection et extraction de la signature Outlook (HTML) ─────────────────── */
 function splitSignatureHtml(html) {
-  // Outlook insère la signature dans un <div id="Signature"> ou <div class="gmail_signature">
+  // Outlook place la signature dans plusieurs patterns possibles selon la version
   const sigPatterns = [
-    /(<div[^>]+id=["']Signature["'][^>]*>[\s\S]*)/i,
-    /(<div[^>]+class=["'][^"']*signature[^"']*["'][^>]*>[\s\S]*)/i,
+    /(<div[^>]+id=["']Signature["'][^>]*>[\s\S]*)/i,          // Outlook desktop classique
+    /(<div[^>]+id=["']appendonsend["'][^>]*>[\s\S]*)/i,       // Outlook 365 web
+    /(<div[^>]+class=["'][^"']*signature[^"']*["'][^>]*>[\s\S]*)/i, // classe contenant "signature"
+    /(<div[^>]+class=["'][^"']*Signature[^"']*["'][^>]*>[\s\S]*)/i, // classe avec majuscule
   ];
 
   for (const pattern of sigPatterns) {
@@ -133,7 +135,7 @@ function splitSignatureHtml(html) {
     }
   }
 
-  // Fallback : pas de signature détectée
+  // Fallback : pas de signature détectée — retourner tout le corps
   return { bodyHtml: html, signatureHtml: '' };
 }
 
@@ -165,8 +167,15 @@ function plainTextToHtml(text) {
   while (i < lines.length) {
     const trimmed = lines[i].trim();
 
-    // Ligne vide — on saute
-    if (!trimmed) { i++; continue; }
+    // Ligne vide ou séparateur --- → on saute
+    if (!trimmed || /^-{3,}$/.test(trimmed)) { i++; continue; }
+
+    // Blockquote > → paragraphe simple
+    if (/^>\s*/.test(trimmed)) {
+      blocks.push(`<p><em>${inlineFormat(trimmed.replace(/^>\s*/, ''))}</em></p>`);
+      i++;
+      continue;
+    }
 
     // Liste numérotée (1. item)
     if (/^\d+\.\s+/.test(trimmed)) {
@@ -179,7 +188,7 @@ function plainTextToHtml(text) {
       continue;
     }
 
-    // Liste à puces (- ou * ou •)
+    // Liste à puces (- ou * ou • en début de ligne)
     if (/^[-*•]\s+/.test(trimmed)) {
       const items = [];
       while (i < lines.length && /^[-*•]\s+/.test(lines[i].trim())) {
@@ -190,10 +199,12 @@ function plainTextToHtml(text) {
       continue;
     }
 
-    // Paragraphe — collecter les lignes consécutives non-vides et non-bullet
+    // Paragraphe — collecter jusqu'à une ligne vide, --- ou bullet
     const paraLines = [];
-    while (i < lines.length && lines[i].trim() && !/^[-*•]\s+/.test(lines[i].trim()) && !/^\d+\.\s+/.test(lines[i].trim())) {
-      paraLines.push(inlineFormat(lines[i].trim()));
+    while (i < lines.length) {
+      const t = lines[i].trim();
+      if (!t || /^-{3,}$/.test(t) || /^[-*•]\s+/.test(t) || /^\d+\.\s+/.test(t) || /^>\s*/.test(t)) break;
+      paraLines.push(inlineFormat(t));
       i++;
     }
     if (paraLines.length > 0) {
@@ -204,13 +215,14 @@ function plainTextToHtml(text) {
   return blocks.join('');
 }
 
-/* ─── Formater les styles inline (gras markdown) ────────────────────────────── */
+/* ─── Formater les styles inline (gras, italique markdown) ──────────────────── */
 function inlineFormat(text) {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
 }
 
 /* ─── Affichage des résultats ────────────────────────────────────────────────── */
