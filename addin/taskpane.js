@@ -158,15 +158,59 @@ function htmlToPlainText(html) {
 
 /* ─── Convertir texte brut de Claude en HTML pour Outlook ───────────────────── */
 function plainTextToHtml(text) {
+  const lines = text.split('\n');
+  const blocks = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const trimmed = lines[i].trim();
+
+    // Ligne vide — on saute
+    if (!trimmed) { i++; continue; }
+
+    // Liste numérotée (1. item)
+    if (/^\d+\.\s+/.test(trimmed)) {
+      const items = [];
+      while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
+        items.push(`<li>${inlineFormat(lines[i].trim().replace(/^\d+\.\s+/, ''))}</li>`);
+        i++;
+      }
+      blocks.push(`<ol>${items.join('')}</ol>`);
+      continue;
+    }
+
+    // Liste à puces (- ou * ou •)
+    if (/^[-*•]\s+/.test(trimmed)) {
+      const items = [];
+      while (i < lines.length && /^[-*•]\s+/.test(lines[i].trim())) {
+        items.push(`<li>${inlineFormat(lines[i].trim().replace(/^[-*•]\s+/, ''))}</li>`);
+        i++;
+      }
+      blocks.push(`<ul>${items.join('')}</ul>`);
+      continue;
+    }
+
+    // Paragraphe — collecter les lignes consécutives non-vides et non-bullet
+    const paraLines = [];
+    while (i < lines.length && lines[i].trim() && !/^[-*•]\s+/.test(lines[i].trim()) && !/^\d+\.\s+/.test(lines[i].trim())) {
+      paraLines.push(inlineFormat(lines[i].trim()));
+      i++;
+    }
+    if (paraLines.length > 0) {
+      blocks.push(`<p>${paraLines.join('<br>')}</p>`);
+    }
+  }
+
+  return blocks.join('');
+}
+
+/* ─── Formater les styles inline (gras markdown) ────────────────────────────── */
+function inlineFormat(text) {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .split('\n\n')
-    .map(para => para.trim())
-    .filter(para => para.length > 0)
-    .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
-    .join('');
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 }
 
 /* ─── Affichage des résultats ────────────────────────────────────────────────── */
