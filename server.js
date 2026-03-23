@@ -114,8 +114,9 @@ Règles de formatage pour cette section :
 - Jamais de tiret long (—) — utiliser une virgule ou reformuler
 
 ### Changements clés
-[2 à 4 bullets max : **Ce qui a changé** — pourquoi ça améliore le courriel]
-[Ne liste pas les corrections triviales]`;
+[2 à 4 bullets max, format : "Ce qui a changé — brève raison si non évidente"]
+[Pas de gras, pas de tiret long, pas de formules du genre "améliore la lisibilité"]
+[Exemples : "Ouverture allégée", "Tiret long retiré ligne Scotia", "Tutoiement unifié"]`;
 
 // ─── Préférences apprises — cache mémoire + sauvegarde ───────────────────────
 const PREFERENCES_FILE = path.join(__dirname, 'preferences.json');
