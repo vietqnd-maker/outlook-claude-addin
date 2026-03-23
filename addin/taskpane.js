@@ -6,6 +6,7 @@ Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
     loadEmailInfo();
     document.getElementById('btnApply').addEventListener('click', appliquerRevision);
+    document.getElementById('emailRevised').addEventListener('input', (e) => autoResizeTextarea(e.target));
     document.getElementById('toggleDiagnostic').addEventListener('click', () => {
       const body = document.getElementById('diagnostic');
       const arrow = document.querySelector('#toggleDiagnostic .toggle-arrow');
@@ -164,8 +165,10 @@ function afficherRevision(markdown) {
     document.getElementById('diagnostic').innerHTML = formatMarkdown(sections.diagnostic);
   }
   if (sections.revision) {
-    document.getElementById('emailRevised').value = sections.revision;
+    const textarea = document.getElementById('emailRevised');
+    textarea.value = sections.revision;
     window._originalRevision = sections.revision;
+    autoResizeTextarea(textarea);
   }
   if (sections.changements) {
     document.getElementById('changements').innerHTML = formatMarkdown(sections.changements);
@@ -254,6 +257,12 @@ async function envoyerFeedback(original, revised) {
   } catch (err) {
     console.warn('Feedback non envoyé:', err.message);
   }
+}
+
+/* ─── Auto-resize textarea selon le contenu ─────────────────────────────────── */
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
 }
 
 /* ─── Helpers UI ─────────────────────────────────────────────────────────────── */
