@@ -184,7 +184,7 @@ app.post('/api/reviser', async (req, res) => {
   try {
     const response = await client.messages.create({
       model: MODEL,
-      max_tokens: 2048,
+      max_tokens: 4096,
       system: buildSystemPrompt(),
       messages: [{ role: 'user', content: userMessage }],
     });
