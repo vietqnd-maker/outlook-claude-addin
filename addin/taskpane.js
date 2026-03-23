@@ -7,7 +7,6 @@ Office.onReady((info) => {
     loadEmailInfo();
     document.getElementById('btnApply').addEventListener('click', appliquerRevision);
     document.getElementById('btnFullscreen').addEventListener('click', ouvrirPleinEcran);
-    document.getElementById('emailRevised').addEventListener('input', (e) => autoResizeTextarea(e.target));
 
     // Toggle Changements clés
     document.getElementById('toggleChangements').addEventListener('click', () => {
@@ -225,7 +224,6 @@ function afficherRevision(markdown) {
     const textarea = document.getElementById('emailRevised');
     textarea.value = sections.revision;
     window._originalRevision = sections.revision;
-    autoResizeTextarea(textarea);
   }
   if (sections.changements) {
     document.getElementById('changements').innerHTML = formatMarkdown(sections.changements);
@@ -350,7 +348,6 @@ function ouvrirPleinEcran() {
       if (data.action === 'apply') {
         const textarea = document.getElementById('emailRevised');
         textarea.value = data.text;
-        autoResizeTextarea(textarea);
         dialog.close();
         appliquerRevision();
       } else {
@@ -360,11 +357,6 @@ function ouvrirPleinEcran() {
   });
 }
 
-/* ─── Auto-resize textarea selon le contenu ─────────────────────────────────── */
-function autoResizeTextarea(el) {
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-}
 
 /* ─── Helpers UI ─────────────────────────────────────────────────────────────── */
 function setLoading(show) {
