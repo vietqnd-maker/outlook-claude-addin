@@ -236,7 +236,8 @@ async function envoyerFeedback(original, revised) {
 /* ─── Helpers UI ─────────────────────────────────────────────────────────────── */
 function setLoading(show) {
   document.getElementById('loading').style.display = show ? 'flex' : 'none';
-  document.getElementById('btnReviser').disabled = show;
+  const btnReviser = document.getElementById('btnReviser');
+  if (btnReviser) btnReviser.disabled = show;
 }
 
 function showResult() {
