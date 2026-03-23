@@ -255,7 +255,7 @@ function parseRevision(text) {
   const chgMatch  = text.match(/###\s*Changements clés\s*([\s\S]*?)$/i);
 
   if (diagMatch) sections.diagnostic  = diagMatch[1].trim();
-  if (revMatch)  sections.revision    = revMatch[1].trim();
+  if (revMatch)  sections.revision    = revMatch[1].trim().replace(/(\n\s*---+\s*)+$/, '').trim();
   if (chgMatch)  sections.changements = chgMatch[1].trim();
 
   if (!sections.revision && text.trim()) {
