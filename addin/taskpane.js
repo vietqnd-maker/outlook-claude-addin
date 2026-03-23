@@ -335,7 +335,7 @@ async function afficherDebugSignature() {
   const html = await getEmailBodyHtml(item);
   const { bodyHtml, signatureHtml } = splitSignatureHtml(html);
   const detected = signatureHtml ? '✅ SIGNATURE DÉTECTÉE' : '❌ SIGNATURE NON DÉTECTÉE';
-  const sigPreview = signatureHtml ? signatureHtml.substring(0, 4000) : '(aucune)';
+  const sigPreview = signatureHtml ? signatureHtml.substring(0, 6000) : '(aucune)';
   const info = [
     detected,
     `Longueur corps : ${bodyHtml.length} chars`,
