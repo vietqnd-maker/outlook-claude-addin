@@ -153,8 +153,8 @@ function htmlToPlainText(html) {
 function addOutlookStyles(html) {
   return html
     .replace(/<p(?![^>]*style)[^>]*>/gi, '<p style="margin:0 0 12px 0;">')
-    .replace(/<ul(?![^>]*style)[^>]*>/gi, '<ul style="margin:0 0 12px 0; padding-left:20px;">')
-    .replace(/<ol(?![^>]*style)[^>]*>/gi, '<ol style="margin:0 0 12px 0; padding-left:20px;">')
+    .replace(/<ul(?![^>]*style)[^>]*>/gi, '<ul style="margin:0 0 12px 20px; padding-left:0;">')
+    .replace(/<ol(?![^>]*style)[^>]*>/gi, '<ol style="margin:0 0 12px 20px; padding-left:0;">')
     .replace(/<li(?![^>]*style)[^>]*>/gi, '<li style="margin-bottom:4px;">');
 }
 
