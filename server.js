@@ -186,7 +186,7 @@ app.post('/api/reviser', async (req, res) => {
   if (from)    userMessage += `**De :** ${from}\n`;
   if (subject || from) userMessage += '\n';
   userMessage += emailBody;
-  userMessage += `\n\n---\n⚠️ CONTRAINTE STRUCTURELLE : Ce courriel contient ${blockCount} blocs distincts (paragraphes ou listes). Ta révision doit contenir exactement ${blockCount} blocs <p>, <ul> ou <ol>. Compte-les avant d'envoyer. Si tu en as plus ou moins, tu as fusionné ou supprimé du contenu — corrige.`;
+  userMessage += `\n\n---\n⚠️ Ce courriel contient ${blockCount} points de contenu distincts. Chaque point doit apparaître dans ta révision. Tu peux reformuler, mais tu ne peux pas omettre d'information.`;
 
   try {
     const response = await client.messages.create({
