@@ -176,12 +176,17 @@ app.post('/api/reviser', async (req, res) => {
     return res.status(400).json({ error: 'Corps du courriel manquant.' });
   }
 
+  // Compter les blocs distincts du courriel original (paragraphes + listes)
+  const blocks = emailBody.split(/\n{2,}/).map(b => b.trim()).filter(b => b.length > 0);
+  const blockCount = blocks.length;
+
   // Construire le contexte utilisateur
-  let userMessage = 'Révise ce courriel :\n\n';
+  let userMessage = `Révise ce courriel :\n\n`;
   if (subject) userMessage += `**Objet :** ${subject}\n`;
   if (from)    userMessage += `**De :** ${from}\n`;
   if (subject || from) userMessage += '\n';
   userMessage += emailBody;
+  userMessage += `\n\n---\n⚠️ CONTRAINTE STRUCTURELLE : Ce courriel contient ${blockCount} blocs distincts (paragraphes ou listes). Ta révision doit contenir exactement ${blockCount} blocs <p>, <ul> ou <ol>. Compte-les avant d'envoyer. Si tu en as plus ou moins, tu as fusionné ou supprimé du contenu — corrige.`;
 
   try {
     const response = await client.messages.create({
