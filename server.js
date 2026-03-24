@@ -202,13 +202,10 @@ app.post('/api/reviser', async (req, res) => {
     // 🔍 LOG DIAGNOSTIC — à retirer une fois le problème identifié
     const stopReason = response.stop_reason;
     const outputTokens = response.usage?.output_tokens ?? '?';
-    console.log(`\n─── RÉPONSE CLAUDE ───`);
-    console.log(`Stop reason : ${stopReason}`);
-    console.log(`Tokens output : ${outputTokens} / 4096`);
-    console.log(`Longueur réponse : ${revision.length} chars`);
-    console.log(`Début : ${revision.substring(0, 120).replace(/\n/g, '↵')}`);
-    console.log(`Fin   : ${revision.substring(revision.length - 120).replace(/\n/g, '↵')}`);
-    console.log(`─────────────────────\n`);
+    console.log(`\n─── RÉPONSE CLAUDE (COMPLÈTE) ───`);
+    console.log(`Stop reason : ${stopReason} | Tokens : ${outputTokens} / 4096 | Chars : ${revision.length}`);
+    console.log(revision);
+    console.log(`─────────────────────────────────\n`);
 
     res.json({ revision });
 
