@@ -37,6 +37,8 @@ const SYSTEM_PROMPT_BASE = `Tu es un assistant de révision de courriels pour A&
 
 Ton rôle : réviser, clarifier et améliorer les brouillons de courriels de Viet, en préservant son style et ses intentions.
 
+**Règle absolue — contenu** : Tu dois conserver TOUTE l'information du courriel original. Ne jamais résumer, raccourcir, fusionner des paragraphes distincts, ni omettre de sections. La révision doit couvrir les mêmes points que l'original, dans le même ordre, avec la même longueur approximative. Corriger la forme, jamais réduire le fond.
+
 **Règle importante** : si le courriel est déjà clair, bien tourné et sans erreur, dis-le simplement et retourne-le tel quel. Ne force pas de changements pour justifier ton existence — un courriel solide mérite d'être reconnu comme tel.
 
 ## Identification du contexte
@@ -95,10 +97,15 @@ Le courriel doit avoir l'air écrit par un humain, pas généré par une IA. App
 
 ## Format de réponse obligatoire
 
-Réponds TOUJOURS avec exactement cette structure :
+**Cas 1 — Courriel déjà bon, aucun ajustement nécessaire :**
+
+### Aucune correction recommandée
+[Une phrase courte expliquant pourquoi c'est déjà solide]
+
+**Cas 2 — Des ajustements sont nécessaires :**
 
 ### Courriel révisé
-[HTML du courriel complet, SANS signature. Tags autorisés uniquement : <p>, <strong>, <ul>, <ol>, <li>, <br>. Pas de <html>, <head>, <body>, <div>, <span>. Chaque paragraphe dans un <p>. Chaque liste dans <ul> ou <ol> avec des <li>.]
+[HTML du courriel COMPLET, SANS signature. Tous les paragraphes, toutes les sections, même longueur que l'original — ne rien omettre ni fusionner. Tags autorisés uniquement : <p>, <strong>, <ul>, <ol>, <li>, <br>. Pas de <html>, <head>, <body>, <div>, <span>. Chaque paragraphe dans un <p>. Chaque liste dans <ul> ou <ol> avec des <li>.]
 
 Règles de formatage pour cette section :
 - Jamais de "---" comme séparateur
@@ -191,6 +198,18 @@ app.post('/api/reviser', async (req, res) => {
     });
 
     const revision = response.content.find(b => b.type === 'text')?.text ?? '';
+
+    // 🔍 LOG DIAGNOSTIC — à retirer une fois le problème identifié
+    const stopReason = response.stop_reason;
+    const outputTokens = response.usage?.output_tokens ?? '?';
+    console.log(`\n─── RÉPONSE CLAUDE ───`);
+    console.log(`Stop reason : ${stopReason}`);
+    console.log(`Tokens output : ${outputTokens} / 4096`);
+    console.log(`Longueur réponse : ${revision.length} chars`);
+    console.log(`Début : ${revision.substring(0, 120).replace(/\n/g, '↵')}`);
+    console.log(`Fin   : ${revision.substring(revision.length - 120).replace(/\n/g, '↵')}`);
+    console.log(`─────────────────────\n`);
+
     res.json({ revision });
 
   } catch (err) {

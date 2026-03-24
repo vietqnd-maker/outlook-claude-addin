@@ -228,15 +228,29 @@ function inlineFormat(text) {
 /* ─── Affichage des résultats ────────────────────────────────────────────────── */
 function afficherRevision(markdown) {
   const sections = parseRevision(markdown);
+  const editor   = document.getElementById('emailRevised');
+  const btnApply = document.getElementById('btnApply');
+  const btnFS    = document.getElementById('btnFullscreen');
 
-  if (sections.revision) {
-    const editor = document.getElementById('emailRevised');
-    // Injecter directement le HTML de Claude — qualité copy-paste native
+  if (sections.noChanges) {
+    // Courriel déjà bon — afficher message, masquer les boutons d'action
+    editor.innerHTML = `<p style="color:#7EC8A0; margin:0;">✓ ${sections.noChanges}</p>`;
+    editor.contentEditable = 'false';
+    btnApply.style.display = 'none';
+    btnFS.style.display    = 'none';
+    window._originalHtml   = null;
+    document.getElementById('sectionChangements').style.display = 'none';
+  } else if (sections.revision) {
+    // Courriel révisé — injecter HTML complet
     editor.innerHTML = addOutlookStyles(sections.revision);
-    window._originalHtml = editor.innerHTML;
-  }
-  if (sections.changements) {
-    document.getElementById('changements').innerHTML = formatMarkdown(sections.changements);
+    editor.contentEditable = 'true';
+    btnApply.style.display = '';
+    btnFS.style.display    = '';
+    window._originalHtml   = editor.innerHTML;
+    if (sections.changements) {
+      document.getElementById('changements').innerHTML = formatMarkdown(sections.changements);
+      document.getElementById('sectionChangements').style.display = '';
+    }
   }
 
   showResult();
@@ -244,17 +258,15 @@ function afficherRevision(markdown) {
 
 /* ─── Parser les sections Markdown de Claude ────────────────────────────────── */
 function parseRevision(text) {
-  const sections = { revision: '', changements: '' };
+  const sections = { revision: '', changements: '', noChanges: '' };
 
-  const revMatch = text.match(/###\s*Courriel révisé\s*([\s\S]*?)(?=###\s*Changements clés|$)/i);
-  const chgMatch = text.match(/###\s*Changements clés\s*([\s\S]*?)$/i);
+  const noChgMatch = text.match(/###\s*Aucune correction recommandée\s*([\s\S]*?)$/i);
+  const revMatch   = text.match(/###\s*Courriel révisé\s*([\s\S]*?)(?=###\s*Changements clés|$)/i);
+  const chgMatch   = text.match(/###\s*Changements clés\s*([\s\S]*?)$/i);
 
-  if (revMatch)  sections.revision    = revMatch[1].trim().replace(/(\n\s*---+\s*)+$/, '').trim();
-  if (chgMatch)  sections.changements = chgMatch[1].trim();
-
-  if (!sections.revision && text.trim()) {
-    sections.revision = text.trim();
-  }
+  if (noChgMatch) sections.noChanges  = noChgMatch[1].trim() || 'Courriel déjà clair et bien tourné.';
+  if (revMatch)   sections.revision   = revMatch[1].trim().replace(/(\n\s*---+\s*)+$/, '').trim();
+  if (chgMatch)   sections.changements = chgMatch[1].trim();
 
   return sections;
 }
