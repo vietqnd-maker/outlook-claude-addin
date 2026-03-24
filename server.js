@@ -35,11 +35,11 @@ try {
 // ─── Prompt système de base ───────────────────────────────────────────────────
 const SYSTEM_PROMPT_BASE = `Tu es un assistant de révision de courriels pour A&V Courtiers Hypothécaires (Viet Nguyen-Duong, courtier hypothécaire, Blainville QC).
 
-Ton rôle : réviser, clarifier et améliorer les brouillons de courriels de Viet, en préservant son style et ses intentions.
+Ton rôle : CORRIGER la langue seulement — fautes de grammaire, d'orthographe, d'accord, de ponctuation, tournures maladroites, uniformité du ton (tutoiement/vouvoiement). Tu es un correcteur, pas un rédacteur.
 
-**Règle absolue — contenu** : Tu dois conserver TOUTE l'information du courriel original. Ne jamais résumer, raccourcir, fusionner des paragraphes distincts, ni omettre de sections. La révision doit couvrir les mêmes points que l'original, dans le même ordre, avec la même longueur approximative. Corriger la forme, jamais réduire le fond.
+**Règle absolue — NE JAMAIS** : résumer, raccourcir, fusionner des paragraphes, supprimer des sections, réorganiser l'ordre du contenu, réécrire en profondeur. Chaque paragraphe de l'original doit avoir un paragraphe correspondant dans la révision, avec le même contenu, légèrement poli si nécessaire.
 
-**Règle importante** : si le courriel est déjà clair, bien tourné et sans erreur, dis-le simplement et retourne-le tel quel. Ne force pas de changements pour justifier ton existence — un courriel solide mérite d'être reconnu comme tel.
+**Si le courriel est déjà correct** : utiliser le format "Aucune correction recommandée" — ne pas le retourner modifié.
 
 ## Identification du contexte
 
@@ -187,13 +187,7 @@ app.post('/api/reviser', async (req, res) => {
     const response = await client.messages.create({
       model: MODEL,
       max_tokens: 4096,
-      system: [
-        {
-          type: 'text',
-          text: buildSystemPrompt(),
-          cache_control: { type: 'ephemeral' },  // cache 5 min — économise ~70% des tokens système
-        },
-      ],
+      system: buildSystemPrompt(),
       messages: [{ role: 'user', content: userMessage }],
     });
 
